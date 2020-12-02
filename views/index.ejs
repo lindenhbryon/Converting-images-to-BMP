@@ -7,6 +7,9 @@
 </head>
 <body>
     <h1>Image Processing</h1>
+    <% if (typeof error !== 'undefined') { %>
+        <h2>No file uploaded.</h2>
+      <% } %>
     <form action="/upload" method="post" enctype="multipart/form-data">
         <input type="file" name="profile_pic" id="fileToUpload">
         <input type="submit" value="Upload" name="submit">
