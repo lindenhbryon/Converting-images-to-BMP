@@ -28,6 +28,7 @@ router.get('/', function(req, res, next) {
 });
 router.post('/upload', upload.single('profile_pic'), function (req, res, next) {
   imageHelperInstance.setImage(req.file.filename);
+  
   // if(!req.file){
   //   var error = 'No File Uploaded'
   // }
