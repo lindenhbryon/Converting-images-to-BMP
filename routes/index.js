@@ -13,39 +13,46 @@ var storage = multer.diskStorage({
     cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
   }
 })
- 
-var upload = multer({ storage: storage })
-
-const imageFilter = function(file) {
+const imageFilter = function(req, file, cb) {
   if (!file.originalname.match(/\.(jpg|JPG|jpeg|JPEG|png|PNG|gif|GIF)$/)) {
-      return false;
+      req.fileValidationError = 'Only image files are allowed!';
+      return cb(new Error('Only image files are allowed!'), false);
   }
-  return true;
+  cb(null, true);
 };
+
 
 router.get('/', function(req, res, next) {
   res.render('index', { title: 'Express' });
 });
-router.post('/upload', upload.single('profile_pic'), function (req, res, next) {
-  imageHelperInstance.setImage(req.file.filename);
-  
-  // if(!req.file){
-  //   var error = 'No File Uploaded'
-  // }
-  // //re-visit this later
-  // if(!imageFilter(req.file.filename)){
-  //   error = 'incorrect file format';
-  // };
 
-  
+router.post('/upload', (req, res) => {
+  let upload = multer({ storage: storage, fileFilter: imageFilter }).single('profile_pic');
 
+  upload(req, res, function(err) {
+      var message = "File converted successfully";
+      var error = false;
+      if (req.fileValidationError) {
+        message = "Only images can be uploaded jpg png";
+        error = true;
+      }
+      else if (!req.file) {
+          message = "Please select a file to upload";
+          error = true;
+      }
+      else if (err instanceof multer.MulterError) {
+        message = "Multer error";
+        error = true;
+      }
+      else if (err) {
+        message = "Unknown error";
+        error = true;
+      }
+      imageHelperInstance.initiateConversion(req.file.filename)
 
-  // res.render('index', 
-  //     { 
-  //       title: 'Express',
-  //       error: error
-  //     }
-  //   );
-  
-})
+      res.render('index', { title: 'Express', error: error, message:message });
+      
+  });
+});
+
 module.exports = router;
